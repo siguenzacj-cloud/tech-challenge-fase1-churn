@@ -79,3 +79,15 @@ benefício**: se o modelo subestimar sistematicamente o risco real de um grupo, 
 receberia sistematicamente menos benefícios de retenção que outro grupo com o mesmo risco real.
 **Fairlearn** será aplicado na Etapa 2/3, uma vez que exista um modelo treinado, para auditar
 taxas de seleção e erro entre grupos.
+
+**Viés de janela de observação.** O dataset define `Churn Label` com uma janela temporal fixa:
+"Yes" = o cliente saiu da empresa neste trimestre; "No" = o cliente permaneceu neste trimestre. A
+variável-alvo não é ambígua — responde a uma pergunta bem delimitada ("cancelou neste
+trimestre?"), não "vai cancelar algum dia?". Ainda assim, isso introduz um viés conhecido em
+problemas de churn: clientes com `Tenure Months` baixo tiveram menos tempo de exposição dentro do
+trimestre para efetivamente cancelar, comparado a clientes de tenure alto — um "No" em um cliente
+novo carrega mais incerteza do que um "No" em um cliente de longa data. Decisão adotada: não
+redefinir o target (isso descaracterizaria o problema de negócio pedido e reduziria a base de
+dados), e sim manter `Tenure Months` como feature no modelo, permitindo que o próprio modelo
+capture esse efeito. Fica documentado como limitação conhecida do modelo, a ser citada também no
+Model Card (Etapa 4).
