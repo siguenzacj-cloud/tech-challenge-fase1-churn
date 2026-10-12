@@ -1,0 +1,72 @@
+{
+  "modelo": "Regressão Logística ajustada",
+  "data_treinamento": "2026-10-12",
+  "versao_sklearn": "1.9.1",
+  "seed": 42,
+  "hiperparametros": {
+    "C": 100,
+    "l1_ratio": 0
+  },
+  "features": {
+    "numericas": [
+      "Tenure Months",
+      "Monthly Charges",
+      "Total Charges"
+    ],
+    "categoricas": [
+      "Gender",
+      "Senior Citizen",
+      "Partner",
+      "Dependents",
+      "Phone Service",
+      "Multiple Lines",
+      "Internet Service",
+      "Online Security",
+      "Online Backup",
+      "Device Protection",
+      "Tech Support",
+      "Streaming TV",
+      "Streaming Movies",
+      "Contract",
+      "Paperless Billing",
+      "Payment Method"
+    ]
+  },
+  "segmentacao": {
+    "cortes": [
+      0.2,
+      0.5
+    ],
+    "segmentos": [
+      {
+        "nome": "Acompanhamento",
+        "faixa": "< 20%",
+        "acao": "Nenhuma ação específica"
+      },
+      {
+        "nome": "Retenção conservadora",
+        "faixa": "20% a < 50%",
+        "acao": "Gestão comercial: produtos de barreira de saída (contrato, tipo de serviço, dependentes)"
+      },
+      {
+        "nome": "Retenção agressiva",
+        "faixa": ">= 50%",
+        "acao": "Produtos de barreira de saída + 1 mês de serviço grátis"
+      }
+    ]
+  },
+  "metricas": {
+    "validacao_cruzada": {
+      "AUC-ROC": 0.859,
+      "Brier": 0.13,
+      "Recall corte 50%": 0.585,
+      "Recall segmentação": 0.878
+    },
+    "teste": {
+      "AUC-ROC": 0.848,
+      "Brier": 0.136,
+      "Recall corte 50%": 0.567,
+      "Recall segmentação": 0.856
+    }
+  }
+}
