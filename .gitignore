@@ -4,3 +4,8 @@ __pycache__/
 .ipynb_checkpoints/
 mlruns/
 .pytest_cache/
+
+# Build do pacote
+*.egg-info/
+build/
+dist/

@@ -5,7 +5,10 @@
   "seed": 42,
   "hiperparametros": {
     "C": 100,
-    "l1_ratio": 0
+    "l1_ratio": 0,
+    "solver": "liblinear",
+    "max_iter": 1000,
+    "random_state": 42
   },
   "features": {
     "numericas": [
@@ -40,18 +43,18 @@
     "segmentos": [
       {
         "nome": "Acompanhamento",
-        "faixa": "< 20%",
-        "acao": "Nenhuma ação específica"
+        "probabilidade_minima": 0.0,
+        "acao": "Nenhuma ação específica."
       },
       {
         "nome": "Retenção conservadora",
-        "faixa": "20% a < 50%",
-        "acao": "Gestão comercial: produtos de barreira de saída (contrato, tipo de serviço, dependentes)"
+        "probabilidade_minima": 0.2,
+        "acao": "Gestão comercial para contratação de produtos de barreira de saída: mudança do tipo de contrato, do tipo de serviço, inclusão de dependentes."
       },
       {
         "nome": "Retenção agressiva",
-        "faixa": ">= 50%",
-        "acao": "Produtos de barreira de saída + 1 mês de serviço grátis"
+        "probabilidade_minima": 0.5,
+        "acao": "Produtos de barreira de saída com bonificação de 1 mês de serviço grátis."
       }
     ]
   },

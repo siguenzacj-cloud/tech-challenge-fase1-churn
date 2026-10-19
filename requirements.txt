@@ -1,8 +1,25 @@
-pandas
-numpy
-scikit-learn
-matplotlib
-seaborn
-jupyter
-ipykernel
-fairlearn
+# Ambiente completo do projeto (versões fixadas para reprodutibilidade)
+# Instalação: pip install -r requirements.txt
+
+# --- Modelo e API (código produtivo em src/) ---
+pandas==3.0.5
+numpy==2.5.3
+scikit-learn==1.9.1
+joblib==1.6.0
+fastapi==0.143.0
+uvicorn==0.54.0
+pydantic==2.14.1
+
+# --- Testes ---
+pytest==9.1.1
+httpx==0.28.1
+
+# --- Notebooks (experimentação) ---
+matplotlib==3.11.2
+seaborn==0.13.2
+fairlearn==0.15.0
+jupyter==1.1.1
+ipykernel==7.3.0
+
+# --- Pacote do projeto (src/churn) em modo editável ---
+-e .
