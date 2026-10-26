@@ -81,9 +81,96 @@ simplicidade. Detalhes em `notebooks/02_modelagem.ipynb` e `docs/experimentos.md
 
 - [x] Etapa 1 — Entendimento e preparação
 - [x] Etapa 2 — Modelagem e avaliação
-- [ ] Etapa 3 — Engenharia de software e API (refatoração para `src/` concluída; testes e API em andamento)
+- [x] Etapa 3 — Engenharia de software e API (refatoração para `src/` concluída; testes e API em andamento)
 - [ ] Etapa 4 — Documentação e entrega final
 
 ## Como executar a API
 
-_Pendente: será documentado junto com a implementação da API (Etapa 3)._
+A API (FastAPI) carrega o modelo campeão uma única vez na inicialização e expõe a predição de churn
+por HTTP. O código fica em `src/churn/api/` (`schemas.py` e `main.py`). O schema de entrada é gerado a partir de `src/churn/config.py`, então a validação
+acompanha qualquer mudança nas features.
+
+### 1. Pré-requisitos
+
+```bash
+pip install -r requirements.txt        # já inclui fastapi, uvicorn e httpx
+python -m churn.train                  # gera models/champion_model.joblib, se ainda não existir
+```
+
+### 2. Subir o servidor
+
+A partir da raiz do repositório:
+
+```bash
+uvicorn churn.api.main:app --reload
+```
+
+- Documentação interativa (Swagger): http://127.0.0.1:8000/docs
+- Health check: http://127.0.0.1:8000/health
+
+### 3. Endpoints
+
+| Método | Rota | Descrição |
+|---|---|---|
+| GET | `/health` | Status da API, se o modelo está carregado e metadados do modelo |
+| POST | `/predict` | Prediz um cliente: probabilidade, segmento de risco e ação sugerida |
+| POST | `/predict/batch` | Prediz vários clientes (1 a 1000) em uma chamada |
+
+### 4. Exemplo de uso
+
+```bash
+curl -X POST http://127.0.0.1:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "Tenure Months": 2,
+    "Monthly Charges": 70.7,
+    "Total Charges": 151.65,
+    "Gender": "Female",
+    "Senior Citizen": "No",
+    "Partner": "No",
+    "Dependents": "No",
+    "Phone Service": "Yes",
+    "Multiple Lines": "No",
+    "Internet Service": "Fiber optic",
+    "Online Security": "No",
+    "Online Backup": "No",
+    "Device Protection": "No",
+    "Tech Support": "No",
+    "Streaming TV": "No",
+    "Streaming Movies": "No",
+    "Contract": "Month-to-month",
+    "Paperless Billing": "Yes",
+    "Payment Method": "Electronic check"
+  }'
+```
+
+Resposta (formato):
+
+```json
+{
+  "probability": 0.0,
+  "segment": "Retenção agressiva",
+  "action": "Produtos de barreira de saída com bonificação de 1 mês de serviço grátis."
+}
+```
+
+(`probability` é um número entre 0 e 1; o valor acima é só ilustrativo.)
+
+### 5. Validação e erros
+
+| Código | Quando |
+|---|---|
+| 200 | Predição realizada |
+| 422 | Campo ausente, campo desconhecido, valor numérico negativo ou categoria fora da lista aceita (ex.: `"Contract": "Weekly"`) |
+| 503 | Modelo não carregado |
+
+Se `models/champion_model.joblib` não existir, o servidor não sobe e orienta a executar
+`python -m churn.train`.
+
+### 6. Testes da API
+
+```bash
+pytest tests/test_api.py
+```
+
+Os testes são pulados automaticamente se o modelo ainda não tiver sido gerado.
