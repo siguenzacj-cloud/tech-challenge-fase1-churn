@@ -48,7 +48,7 @@ Informações de rastreabilidade do artefato atual:
 
 - **Scikit-Learn:** 1.9.1;
 - **Seed:** 42;
-- **Data de treinamento registrada:** 2026-10-24.
+- **Data de treinamento registrada:** 2026-10-12.
 
 O modelo final é armazenado em:
 
