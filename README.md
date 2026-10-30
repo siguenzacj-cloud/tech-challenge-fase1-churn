@@ -92,7 +92,7 @@ Detalhes em `notebooks/02_modelagem.ipynb`, `docs/experimentos.md` e `docs/model
 - [x] Etapa 3 — Engenharia de software e API
 - [x] Testes e validação de reprodutibilidade
 - [x] Model Card
-- [ ] Etapa 4 — Documentação e entrega final
+- [x] Etapa 4 — Documentação e entrega final
 
 ## Como executar a API
 
