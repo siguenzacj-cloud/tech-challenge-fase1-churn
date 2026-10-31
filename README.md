@@ -19,20 +19,26 @@ Guia de handoff para a equipe: [`docs/guia_equipe.md`](docs/guia_equipe.md).
 
 ## Estrutura do projeto
 
-```
+```text
 data/                  dataset Telco Customer Churn (IBM)
+
 notebooks/             experimentação
   01_eda.ipynb         Etapa 1 — EDA e baseline de Regressão Logística
   02_modelagem.ipynb   Etapa 2 — comparação LogReg / Random Forest / MLP, calibração, segmentação, Fairlearn
+
 src/churn/             código produtivo (pacote instalável)
   config.py            fonte única: rotas, seed, features, hiperparâmetros, segmentos de risco
   data.py              carga, limpeza e split dos dados
   features.py          pré-processamento (StandardScaler + OneHotEncoder)
   train.py             treina o modelo campeão e salva modelo + metadados
   predict.py           probabilidade → segmento → ação
+  api/
+    main.py            aplicação FastAPI e endpoints
+    schemas.py         validação dos dados de entrada
+
 models/                champion_model.joblib + champion_metadata.json
 tests/                 testes automatizados (pytest)
-docs/                  ML Canvas, registro de experimentos, guia da equipe
+docs/                  ML Canvas, experimentos, guia da equipe e Model Card
 ```
 
 ## Como começar
@@ -56,13 +62,15 @@ Verificação (regenera o modelo a partir do CSV e mostra as métricas):
 python -m churn.train
 ```
 
-Resultado esperado no teste: **AUC-ROC 0,848** e **recall da segmentação 0,856**.
+Resultado esperado no conjunto de teste: **AUC-ROC 0,848** e **recall da segmentação 0,856**.
 
 ## Resultados (Etapa 2)
 
 Modelo campeão: **Regressão Logística ajustada** (`C=100`, L2), escolhida frente a Random Forest e
 MLP por empate técnico em AUC-ROC (~0,86) e melhor equilíbrio entre desempenho, tempo e
-simplicidade. Detalhes em `notebooks/02_modelagem.ipynb` e `docs/experimentos.md`.
+simplicidade.
+
+Detalhes em `notebooks/02_modelagem.ipynb`, `docs/experimentos.md` e `docs/model_card.md`.
 
 | Segmento | Probabilidade de churn | Ação |
 |---|---|---|
@@ -81,14 +89,18 @@ simplicidade. Detalhes em `notebooks/02_modelagem.ipynb` e `docs/experimentos.md
 
 - [x] Etapa 1 — Entendimento e preparação
 - [x] Etapa 2 — Modelagem e avaliação
-- [x] Etapa 3 — Engenharia de software e API (refatoração para `src/` concluída; testes e API em andamento)
-- [ ] Etapa 4 — Documentação e entrega final
+- [x] Etapa 3 — Engenharia de software e API
+- [x] Testes e validação de reprodutibilidade
+- [x] Model Card
+- [x] Etapa 4 — Documentação e entrega final
 
 ## Como executar a API
 
 A API (FastAPI) carrega o modelo campeão uma única vez na inicialização e expõe a predição de churn
-por HTTP. O código fica em `src/churn/api/` (`schemas.py` e `main.py`). O schema de entrada é gerado a partir de `src/churn/config.py`, então a validação
-acompanha qualquer mudança nas features.
+por HTTP.
+
+O código fica em `src/churn/api/` (`schemas.py` e `main.py`). O schema de entrada é gerado a partir
+de `src/churn/config.py`, então a validação acompanha qualquer mudança nas features.
 
 ### 1. Pré-requisitos
 
@@ -148,13 +160,13 @@ Resposta (formato):
 
 ```json
 {
-  "probability": 0.0,
+  "probability": 0.72,
   "segment": "Retenção agressiva",
   "action": "Produtos de barreira de saída com bonificação de 1 mês de serviço grátis."
 }
 ```
 
-(`probability` é um número entre 0 e 1; o valor acima é só ilustrativo.)
+`probability` é um número entre 0 e 1; o valor acima é apenas ilustrativo.
 
 ### 5. Validação e erros
 
@@ -170,7 +182,70 @@ Se `models/champion_model.joblib` não existir, o servidor não sobe e orienta a
 ### 6. Testes da API
 
 ```bash
-pytest tests/test_api.py
+pytest tests/test_api.py -v
 ```
 
 Os testes são pulados automaticamente se o modelo ainda não tiver sido gerado.
+
+## Testes automatizados
+
+A suíte completa está organizada em:
+
+- `tests/test_api.py`
+- `tests/test_data.py`
+- `tests/test_predict.py`
+
+Para executar todos os testes:
+
+```bash
+pytest tests -v
+```
+
+Na validação final da versão integrada da `main`, foram executados **25 testes**, com:
+
+**25 aprovados e nenhuma falha.**
+
+A suíte foi executada novamente após um novo treinamento do modelo e permaneceu com os **25 testes aprovados**.
+
+Os testes cobrem, entre outros pontos:
+
+- preparação e tratamento dos dados;
+- seleção das features utilizadas pelo modelo;
+- reprodutibilidade e estratificação do split;
+- limites das faixas de segmentação;
+- estrutura das predições;
+- endpoints e validações da API;
+- predição individual e em lote.
+
+## Reprodutibilidade
+
+As principais dependências do projeto possuem versões fixadas em `requirements.txt` e
+`pyproject.toml`.
+
+Os parâmetros utilizados no treinamento são centralizados em `src/churn/config.py`, incluindo:
+
+```python
+SEED = 42
+```
+
+A reprodutibilidade foi validada em um novo clone do repositório, com criação de um ambiente virtual
+independente e reinstalação das dependências.
+
+O novo treinamento reproduziu as métricas registradas para o modelo campeão:
+
+- AUC-ROC de validação cruzada: **0,859**
+- AUC-ROC de teste: **0,848**
+- Brier Score de teste: **0,136**
+- Recall da segmentação no teste: **0,856**
+
+Após a integração final das contribuições do grupo na `main`, o treinamento foi executado novamente e
+manteve os mesmos resultados.
+
+## Model Card
+
+A documentação detalhada do modelo está disponível em:
+
+[`docs/model_card.md`](docs/model_card.md)
+
+O Model Card reúne informações sobre performance, limitações, auditoria de vieses, testes,
+reprodutibilidade e condições de uso do modelo.
